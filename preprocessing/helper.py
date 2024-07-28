@@ -1,3 +1,4 @@
+import pandas as pd
 def encode_categorical(dataframe:pd.DataFrame,
                        feature_name:str|list):
     if type(feature_name) is str:
