@@ -20,10 +20,10 @@ def df_to_dataloader(train_data:pd.DataFrame,
                      batch_size:int=None
                      ):
     # dataframe to tensor
-    X_train = torch.tensor(train_data.drop(columns=label_feature,axis=1).values)
-    y_train = torch.tensor(train_data.loc[:,label_feature].values)
-    X_test = torch.tensor(test_data.drop(columns=label_feature, axis=1).values)
-    y_test = torch.tensor(test_data.loc[:, label_feature].values)
+    X_train = torch.tensor(train_data.drop(columns=label_feature,axis=1).values, dtype=torch.float32)
+    y_train = torch.tensor(train_data.loc[:,label_feature].values, dtype=torch.float32)
+    X_test = torch.tensor(test_data.drop(columns=label_feature, axis=1).values, dtype=torch.float32)
+    y_test = torch.tensor(test_data.loc[:, label_feature].values, dtype=torch.float32)
     # Create torch dataset
     train_tensor = data_utils.TensorDataset(X_train, y_train)
     test_tensor = data_utils.TensorDataset(X_test, y_test)
