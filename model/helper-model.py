@@ -3,6 +3,10 @@ import torch.utils.data as data_utils
 from tqdm.auto import tqdm
 from torchmetrics import Accuracy
 from sklearn.utils.multiclass import type_of_target
+from torch import nn
+import copy
+import matplotlib.pyplot as plt
+
 def train_data(model:nn.Module,
                trainloader:data_utils.DataLoader,
                optimizer:torch.optim,
@@ -61,3 +65,59 @@ def test_data(model:nn.Module,
     test_loss /= len(testloader)
     test_accuracy /= len(testloader)
     return test_loss, test_accuracy
+
+
+def train_and_test(model:nn.Module,
+                   train_loader:data_utils.DataLoader,
+                   test_loader:data_utils.DataLoader,
+                   optimizer:torch.optim,
+                   loss_fun:nn,
+                   epoch:int):
+    bestmodel = None
+    test_loss_min = 999999
+    df_loss_acc = pd.DataFrame(columns=['Train Loss',
+                                        'Test Loss',
+                                        'Train Accuracy',
+                                        'Test Accuracy'])
+
+    for e in range(epoch):
+        print(f"EPOCH : {e}")
+        train_loss, train_acc = train_data(model=model,
+                                            trainloader=train_loader,
+                                            optimizer=optimizer,
+                                            loss_func=loss_fun)
+        test_loss, test_acc = test_data(model=model,
+                                        testloader=test_loader,
+                                        loss_func=loss_fun)
+        
+        df_loss_acc.loc[e, ['Train Loss',
+                            'Test Loss',
+                            'Train Accuracy',
+                            'Test Accuracy']] = (train_loss,
+                                                 test_loss,
+                                                 train_acc,
+                                                 test_acc)
+
+        if test_loss <= test_loss_min:
+            test_loss_min = test_loss
+            bestmodel = copy.deepcopy(model)
+    
+    fig, ax = plt.subplots(nrows=2,ncols=1)
+    ax[0].plot(list(range(1,epoch+1)), df_loss_acc['Train Loss'],label='Train Loss')
+    ax[0].plot(list(range(1,epoch+1)), df_loss_acc['Test Loss'],label='Test Loss')
+    ax[0].set_title('Loss Function')
+    ax[0].set_xlabel('Epoch')
+    ax[0].set_ylabel('Loss')
+    ax[0].legend()
+
+    ax[1].plot(list(range(1,epoch+1)), df_loss_acc['Train Accuracy'],label='Train Accuracy')
+    ax[1].plot(list(range(1,epoch+1)), df_loss_acc['Test Accuracy'],label='Test Accuracy')
+    ax[1].set_title('Accuracy Metrics')
+    ax[1].set_xlabel('Epoch')
+    ax[1].set_ylabel('Accuracy')
+    ax[1].legend()
+
+    plt.tight_layout()
+    plt.show()
+    return bestmodel, df_loss_acc
+            
